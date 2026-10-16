@@ -1,0 +1,5 @@
+.DS_Store
+.env*
+*.mp4
+*.webm
+node_modules/
