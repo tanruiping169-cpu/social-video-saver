@@ -2,3 +2,6 @@
 
 details{font-size:11px;color:#64748b;margin:6px 0}summary{cursor:pointer}textarea{width:100%;height:65px;font-size:11px;resize:vertical;overflow-wrap:anywhere}
 label{display:block;font-size:12px;color:#51617a}select{display:block;width:100%;margin:6px 0 8px;padding:9px;border:1px solid #cbd5e1;background:white;border-radius:7px;color:#17243b;font:inherit}
+
+/* Compact popup and in-page floating view. */
+body{width:300px;font-size:12px}header{padding:10px 14px}header h1{font-size:16px;margin:0}.eyebrow,header p,header h1 span{display:none}.float-entry{display:block;width:calc(100% - 24px);margin:10px 12px 0;text-align:center}.toolbar{padding:10px 12px 0;gap:5px}button{padding:6px 9px}#status{padding:0 12px;font-size:11px;margin:8px 0}main{padding:0 12px;max-height:250px}.card{padding:10px;margin-bottom:8px}h2{font-size:12px}select{padding:6px}.actions{margin-top:8px}footer{padding:8px 12px;margin-top:6px;font-size:10px}video{max-height:150px}.empty{padding:10px 0}.embedded body{width:100%}.embedded header,.embedded .float-entry,.embedded footer{display:none}.embedded main{max-height:none}.embedded body{overflow-y:auto} .embedded .toolbar{position:sticky;top:0;background:#f4f6fa;padding-bottom:6px;z-index:1}

@@ -1,3 +1,4 @@
+const embedded=window.top!==window;document.documentElement.classList.toggle('embedded',embedded);
 const $=id=>document.getElementById(id);let tabId;
 const status=text=>$('status').textContent=text;
 async function request(type,more={}) {const r=await chrome.runtime.sendMessage({type,tabId,...more});if(!r?.ok)throw Error(r?.error||'插件未响应，请重新打开');return r;}
@@ -32,7 +33,8 @@ async function refresh(){
   if(unsupported)$('list').append(element('p',`已排除 ${unsupported} 个播放清单或分片，避免保存不完整文件。`,'meta'));
   return groups.size;
 }
+$('float').onclick=async()=>{try{await chrome.tabs.sendMessage(tabId,{type:'show-float'});window.close();}catch(e){status('请刷新原网页后再打开悬浮窗。');}};
 $('scan').onclick=async()=>{try{const result=await chrome.tabs.sendMessage(tabId,{type:'scan'});const n=await refresh();status(`当前网页发现 ${n} 个视频`+(result?.blobs?'；blob 播放器需等待实际资源加载。':'。'));}catch(e){status('检测失败，请刷新原网页后重试。'+e.message);}};
 $('clear').onclick=async()=>{try{await request('clear');await refresh();status('已清空当前网页列表。');}catch(e){status(e.message);}};
 $('downloads').onclick=()=>chrome.tabs.create({url:'chrome://downloads/'});
-(async()=>{try{const [t]=await chrome.tabs.query({active:true,currentWindow:true});tabId=t?.id;if(!MediaCore.site(t?.url))throw Error('请在 Meta、Instagram、Pinterest 或 TikTok 网页打开插件。');await chrome.tabs.sendMessage(tabId,{type:'scan'}).catch(()=>{});const n=await refresh();status(n?`当前网页 ${n} 个视频，可选择网页提供的分辨率。`:'等待当前网页加载视频；首次安装后请刷新网页。');}catch(e){status(e.message);$('scan').disabled=true;$('clear').disabled=true;}})();
+(async()=>{try{const [t]=await chrome.tabs.query({active:true,currentWindow:true});tabId=t?.id;if(!MediaCore.site(t?.url))throw Error('请在 Meta、Instagram、Pinterest 、TikTok 或小红书 网页打开插件。');await chrome.tabs.sendMessage(tabId,{type:'scan'}).catch(()=>{});const n=await refresh();status(n?`当前网页 ${n} 个视频，可选择网页提供的分辨率。`:'等待当前网页加载视频；首次安装后请刷新网页。');}catch(e){status(e.message);$('scan').disabled=true;$('clear').disabled=true;$('float').disabled=true;}})();

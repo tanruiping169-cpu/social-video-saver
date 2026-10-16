@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Social Video Saver · 社媒视频保存",
-  "version": "0.1.2",
+  "version": "0.3.2",
   "minimum_chrome_version": "102",
-  "description": "检测 Meta 广告资料库、Instagram、Pinterest、TikTok 已加载的视频，手动预览及下载直链视频。",
+  "description": "检测 Meta 广告资料库、Instagram、Pinterest、TikTok、小红书 已加载的视频，手动预览及下载直链视频。",
   "permissions": [
     "downloads",
     "storage",
@@ -30,7 +30,9 @@
     "https://*.byteoversea.com/*",
     "https://*.ibytedtos.com/*",
     "https://*.ibyteimg.com/*",
-    "https://*.muscdn.com/*"
+    "https://*.muscdn.com/*",
+    "https://*.xiaohongshu.com/*",
+    "https://*.xhscdn.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -55,11 +57,13 @@
         "https://*.pinterest.de/*",
         "https://*.pinterest.fr/*",
         "https://*.pinterest.jp/*",
-        "https://*.tiktok.com/*"
+        "https://*.tiktok.com/*",
+        "https://*.xiaohongshu.com/*"
       ],
       "js": [
         "core.js",
-        "content.js"
+        "content.js",
+        "floating.js"
       ],
       "run_at": "document_idle"
     }
@@ -69,5 +73,28 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup.html",
+        "popup.js",
+        "popup.css",
+        "core.js",
+        "icons/icon48.png"
+      ],
+      "matches": [
+        "https://*.facebook.com/*",
+        "https://*.instagram.com/*",
+        "https://*.pinterest.com/*",
+        "https://*.pinterest.co.uk/*",
+        "https://*.pinterest.ca/*",
+        "https://*.pinterest.de/*",
+        "https://*.pinterest.fr/*",
+        "https://*.pinterest.jp/*",
+        "https://*.tiktok.com/*",
+        "https://*.xiaohongshu.com/*"
+      ]
+    }
+  ]
 }

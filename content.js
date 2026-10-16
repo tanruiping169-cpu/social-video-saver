@@ -35,6 +35,9 @@
       if(el.textContent.length>3000000)continue;
       try {metadata.push(...C.variants(JSON.parse(el.textContent),location.href));}catch{}
     }
+    if(location.hostname==='www.xiaohongshu.com'||location.hostname==='xiaohongshu.com'){
+      for(const el of document.querySelectorAll('script:not([src])')){if(el.textContent.length>3000000)continue;const data=C.initialState(el.textContent);if(data)metadata.push(...C.variants(data,location.href));}
+    }
     for(const item of metadata) {
       if(!['mp4','webm'].includes(C.classify(item.url,'',true)))continue;
       const signature=JSON.stringify(item);

@@ -38,7 +38,7 @@ chrome.tabs.onRemoved.addListener(id=>serial(()=>chrome.storage.session.remove(t
 chrome.tabs.onUpdated.addListener((id,info)=>{if(info.url) serial(async()=>{const s=await state(id);if(s.page!==info.url) await save(id,{page:info.url,items:[]});});});
 chrome.runtime.onMessage.addListener((m,sender,reply)=>{
   if(sender.id!==chrome.runtime.id) return;
-  const fromPopup=!sender.tab && sender.url===chrome.runtime.getURL('popup.html');
+  const fromPopup=sender.url===chrome.runtime.getURL('popup.html');
   const job=async()=>{
     if(m.type==='found' && sender.tab && C.site(sender.url)) {
       const tab=await chrome.tabs.get(sender.tab.id);
@@ -46,7 +46,7 @@ chrome.runtime.onMessage.addListener((m,sender,reply)=>{
       return {ok:true};
     }
     if(!fromPopup) throw Error('不允许的请求');
-    const tab=await chrome.tabs.get(m.tabId); if(!C.site(tab.url)) throw Error('请在支持的网站标签页打开插件');
+    const tab=await chrome.tabs.get(sender.tab?.id ?? m.tabId); if(!C.site(tab.url)) throw Error('请在支持的网站标签页打开插件');
     if(m.type==='list') {const s=await state(tab.id);return {ok:true,items:s.page===tab.url?s.items.filter(i=>!C.target(tab.url)||i.group===C.target(tab.url)):[]};}
     if(m.type==='clear') {await save(tab.id,{page:tab.url,items:[]});return {ok:true};}
     if(m.type==='download') {

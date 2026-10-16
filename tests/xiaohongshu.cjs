@@ -1,0 +1,10 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const ctx={URL,atob};vm.createContext(ctx);vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../core.js'),'utf8'),ctx);const C=ctx.MediaCore;
+const id='6411cf99000000001300b6d9', page='https://www.xiaohongshu.com/explore/'+id;
+assert(C.site(page));assert(!C.site('https://xiaohongshu.com.evil.test/explore/'+id));assert(C.media('https://sns-video-bd.xhscdn.com/stream/123'));
+assert.equal(C.target(page),'xhs:'+id);assert.equal(C.target('https://www.xiaohongshu.com/discovery/item/'+id+'?xsec_token=test'),'xhs:'+id);
+const data={note:{noteDetailMap:{[id]:{note:{noteId:id,title:'test',video:{media:{stream:{h264:[{masterUrl:'https://sns-video-bd.xhscdn.com/a',width:1080,height:1920,qualityType:'FHD'},{masterUrl:'https://sns-video-bd.xhscdn.com/b',width:720,height:1280,qualityType:'HD'}]}}}}},other:{note:{noteId:'other',video:{masterUrl:'https://sns-video-bd.xhscdn.com/unrelated'}}}}}};
+const items=C.variants(data,page);assert.equal(items.length,2);assert.equal(items[0].group,'xhs:'+id);assert(items.some(i=>i.width===1080));assert(items.every(i=>!i.url.includes('unrelated')));
+const parsed=C.initialState('window.__INITIAL_STATE__={"x":undefined,"title":"undefined"};');assert.equal(parsed.x,null);assert.equal(parsed.title,'undefined');assert.equal(C.initialState('window.__INITIAL_STATE__={};alert(1)'),null);assert.equal(C.initialState('window.__INITIAL_STATE__={"x":(()=>1)()}'),null);
+assert.equal(C.classify('https://sns-video-bd.xhscdn.com/a.m3u8','','true'),'stream');
+console.log('14 Xiaohongshu checks passed');

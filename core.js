@@ -1,7 +1,7 @@
 /* Shared pure helpers. No remote code or analytics. */
 globalThis.MediaCore = (() => {
-  const sites = ["facebook.com", "instagram.com", "pinterest.com", "pinterest.co.uk", "pinterest.ca", "pinterest.de", "pinterest.fr", "pinterest.jp", "tiktok.com"];
-  const cdns = ["fbcdn.net", "cdninstagram.com", "pinimg.com", "tiktokcdn.com", "tiktokcdn-us.com", "tiktokv.com", "tiktokv.us", "byteoversea.com", "ibytedtos.com", "ibyteimg.com", "muscdn.com"];
+  const sites = ["facebook.com", "instagram.com", "pinterest.com", "pinterest.co.uk", "pinterest.ca", "pinterest.de", "pinterest.fr", "pinterest.jp", "tiktok.com", "xiaohongshu.com"];
+  const cdns = ["fbcdn.net", "cdninstagram.com", "pinimg.com", "tiktokcdn.com", "tiktokcdn-us.com", "tiktokv.com", "tiktokv.us", "byteoversea.com", "ibytedtos.com", "ibyteimg.com", "muscdn.com", "xhscdn.com"];
   const match = (h, list) => list.some(d => h === d || h.endsWith('.' + d));
   function url(value) { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u : null; } catch { return null; } }
   function site(value) { const u=url(value); return !!u && match(u.hostname, sites); }
@@ -25,6 +25,8 @@ globalThis.MediaCore = (() => {
     if(u.hostname.includes('pinterest.')&&pin)return 'pin:'+pin[1];
     if(match(u.hostname,['tiktok.com'])&&tt)return 'tt:'+tt[1];
     if(match(u.hostname,['instagram.com'])&&ig)return 'ig:'+ig[1];
+    const xhs=u.pathname.match(/^\/(?:explore|discovery\/item)\/([a-f0-9]{24})(?:\/|$)/i);
+    if(match(u.hostname,['xiaohongshu.com'])&&xhs)return 'xhs:'+xhs[1];
     return '';
   }
   function asset(value) {
@@ -34,9 +36,10 @@ globalThis.MediaCore = (() => {
   }
   function variants(root,page) {
     const current=target(page), wanted=current.split(':')[1], roots=[], stack=[root];let visited=0;
+    if(current.startsWith('xhs:')){const note=root?.note?.noteDetailMap?.[wanted]?.note;if(note){roots.push(note);stack.length=0;}}
     while(stack.length&&visited++<40000) {
       const o=stack.pop();if(!o||typeof o!=='object')continue;
-      if(current && [o.id,o.pin_id,o.code,o.shortcode].some(v=>String(v)===wanted)){roots.push(o);continue;}
+      if(current && [o.id,o.pin_id,o.code,o.shortcode,o.noteId].some(v=>String(v)===wanted)){roots.push(o);continue;}
       if(!current && (o.video_sd_url||o.video_hd_url)){roots.push(o);continue;}
       for(const value of Object.values(o))if(value&&typeof value==='object')stack.push(value);
     }
@@ -57,13 +60,19 @@ globalThis.MediaCore = (() => {
         for(const [k,v] of Object.entries(o)){
           if(/related|recommend|carousel|comment|author|owner/i.test(k))continue;
           const here=path+'.'+k;
-          if(typeof v==='string' && media(v) && (/\.(mp4|webm)(?:[?#]|$)/i.test(v)||/video_(sd|hd)_url|playAddr|downloadAddr|contentUrl/i.test(k)) && /video|play|download|contentUrl/i.test(here)) {
-            const quality=/video_hd_url/i.test(k)?'HD':/video_sd_url/i.test(k)?'SD':(/V_(\d+)P/i.exec(here)?.[1]||'');
+          if(typeof v==='string' && media(v) && (/\.(mp4|webm)(?:[?#]|$)/i.test(v)||/video_(sd|hd)_url|playAddr|downloadAddr|contentUrl/i.test(k)||current.startsWith('xhs:')&&/\.video\.media\.stream\./.test(here)&&(/masterUrl$/.test(here)||/backupUrls\.\d+$/.test(here))) && /video|play|download|contentUrl/i.test(here)) {
+            const quality=current.startsWith('xhs:')?String(o.qualityType||''):/video_hd_url/i.test(k)?'HD':/video_sd_url/i.test(k)?'SD':(/V_(\d+)P/i.exec(here)?.[1]||'');
             result.push({url:v,source:'metadata',group,width:Number(o.width||o.dimensions?.width||r.dimensions?.width)||0,height:Number(o.height||o.dimensions?.height||r.dimensions?.height)||0,quality,caption:String(r.title||r.desc||'').slice(0,100)});
           }else if(v&&typeof v==='object')walk.push({o:v,path:here});
         }
       }
     }return result;
   }
-  return {site, media, classify, key, filename,target,asset,variants};
+  function initialState(text) {
+    // Accept a JSON object assignment only; never execute page scripts.
+    const match=text.match(/^\s*(?:window\.)?__INITIAL_STATE__\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
+    if(!match)return null;
+    try {return JSON.parse(match[1].replace(/"(?:\\.|[^"\\])*"|\bundefined\b/g,token=>token==='undefined'?'null':token));}catch{return null;}
+  }
+  return {initialState,site, media, classify, key, filename,target,asset,variants};
 })();
