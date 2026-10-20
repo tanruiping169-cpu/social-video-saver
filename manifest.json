@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Social Video Saver · 社媒视频保存",
-  "version": "0.3.2",
-  "minimum_chrome_version": "102",
+  "version": "0.7.0",
+  "minimum_chrome_version": "111",
   "description": "检测 Meta 广告资料库、Instagram、Pinterest、TikTok、小红书 已加载的视频，手动预览及下载直链视频。",
   "permissions": [
     "downloads",
@@ -49,6 +49,16 @@
   "content_scripts": [
     {
       "matches": [
+        "https://*.instagram.com/*"
+      ],
+      "js": [
+        "instagram-bridge.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
         "https://*.facebook.com/*",
         "https://*.instagram.com/*",
         "https://*.pinterest.com/*",
@@ -81,7 +91,9 @@
         "popup.js",
         "popup.css",
         "core.js",
-        "icons/icon48.png"
+        "icons/icon48.png",
+        "quick.html",
+        "quick.js"
       ],
       "matches": [
         "https://*.facebook.com/*",

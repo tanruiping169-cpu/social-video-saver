@@ -17,7 +17,11 @@ globalThis.MediaCore = (() => {
     return null;
   }
   function key(value) { const u=url(value); return u ? u.href : ''; }
-  function filename(item) { return 'SocialVideos/' + (item.adId ? 'ad-'+item.adId : 'video') + '-' + (item.width&&item.height?item.width+'x'+item.height+'-':'') + item.id + '.' + item.kind; }
+  function identity(item) {return [item.platform||'social',item.group||'',asset(item.url)||new URL(item.url).pathname,item.width+'x'+item.height].join(':');}
+  function filename(item) {
+    const clean=v=>String(v||'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/^[. ]+|[. ]+$/g,'').slice(0,70);
+    return 'SocialVideos/'+[item.platform||'social',item.author||'unknown',item.group||item.adId||item.id,item.width&&item.height?item.width+'x'+item.height:'original'].map(clean).join('_')+'.'+item.kind;
+  }
 
   function target(page) {
     const u=url(page);if(!u)return '';
@@ -62,7 +66,7 @@ globalThis.MediaCore = (() => {
           const here=path+'.'+k;
           if(typeof v==='string' && media(v) && (/\.(mp4|webm)(?:[?#]|$)/i.test(v)||/video_(sd|hd)_url|playAddr|downloadAddr|contentUrl/i.test(k)||current.startsWith('xhs:')&&/\.video\.media\.stream\./.test(here)&&(/masterUrl$/.test(here)||/backupUrls\.\d+$/.test(here))) && /video|play|download|contentUrl/i.test(here)) {
             const quality=current.startsWith('xhs:')?String(o.qualityType||''):/video_hd_url/i.test(k)?'HD':/video_sd_url/i.test(k)?'SD':(/V_(\d+)P/i.exec(here)?.[1]||'');
-            result.push({url:v,source:'metadata',group,width:Number(o.width||o.dimensions?.width||r.dimensions?.width)||0,height:Number(o.height||o.dimensions?.height||r.dimensions?.height)||0,quality,caption:String(r.title||r.desc||'').slice(0,100)});
+            result.push({poster:media(r.poster||r.display_url||r.image_versions2?.candidates?.[0]?.url)?(r.poster||r.display_url||r.image_versions2.candidates[0].url):'',author:String((typeof original.author==='string'?original.author:original.author?.uniqueId)||original.user?.username||original.user?.nickname||original.owner?.username||original.pinner?.username||'').slice(0,80),url:v,source:'metadata',group,width:Number(o.width||o.dimensions?.width||r.dimensions?.width)||0,height:Number(o.height||o.dimensions?.height||r.dimensions?.height)||0,quality,caption:String(r.title||r.desc||'').slice(0,100)});
           }else if(v&&typeof v==='object')walk.push({o:v,path:here});
         }
       }
@@ -74,5 +78,14 @@ globalThis.MediaCore = (() => {
     if(!match)return null;
     try {return JSON.parse(match[1].replace(/"(?:\\.|[^"\\])*"|\bundefined\b/g,token=>token==='undefined'?'null':token));}catch{return null;}
   }
-  return {initialState,site, media, classify, key, filename,target,asset,variants};
+  function errorMessage(code=''){
+    if(/^NETWORK_/.test(code))return '网络连接中断，请检查网络后重试或续传。';
+    if(/SERVER_UNAUTHORIZED|SERVER_FORBIDDEN/.test(code))return '视频地址已失效或需要登录，请回到原网页确认能播放，再重试。';
+    if(/SERVER_BAD_CONTENT|SERVER_FAILED|SERVER_UNREACHABLE/.test(code))return '视频服务器暂时无法提供文件，请稍后重试。';
+    if(code==='FILE_NO_SPACE')return '磁盘空间不足，请释放空间后重试。';
+    if(code==='USER_CANCELED')return '下载已取消。';
+    if(/^FILE_/.test(code))return '文件无法保存，请检查下载目录和磁盘权限。';
+    return code?'操作未完成：'+code:'下载中断，请在任务列表中重试。';
+  }
+  return {errorMessage,identity,initialState,site, media, classify, key, filename,target,asset,variants};
 })();

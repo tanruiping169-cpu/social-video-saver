@@ -7,7 +7,7 @@ class El {
  setAttribute(){} addEventListener(){} focus(){} setPointerCapture(){} remove(){this.removed=true;}
  getBoundingClientRect(){return {left:parseFloat(this.style.left)||600,top:parseFloat(this.style.top)||96,width:300,height:420};}
 }
-const ctx={innerWidth:1000,innerHeight:800,window:{addEventListener(){},removeEventListener(){}},document:{createElement:t=>new El(t),documentElement:{append:e=>host=e}},chrome:{runtime:{getURL:p=>'chrome-extension://test/'+p,onMessage:{addListener:f=>listener=f}}}};
+const ctx={setInterval:()=>{},setTimeout:f=>{f();},clearTimeout:()=>{},innerWidth:1000,innerHeight:800,window:{addEventListener(){},removeEventListener(){}},document:{createElement:t=>new El(t),documentElement:{append:e=>host=e}},location:{hostname:'www.instagram.com'},chrome:{storage:{local:{get:async()=>({})},onChanged:{addListener(){}}},runtime:{getURL:p=>'chrome-extension://test/'+p,onMessage:{addListener:f=>listener=f}}}};
 vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../floating.js'),'utf8'),ctx);
 const [style,panel,bubble]=host.shadow.children, [header,frame]=panel.children, [title,minimize,close]=header.children;
 assert(panel.hidden);assert(!bubble.hidden);assert.equal(frame.src,'about:blank');
@@ -28,3 +28,5 @@ bubble.onpointerup();assert.equal(host.style.left,'0px');assert.equal(host.style
 bubble.onclick({detail:1});assert(panel.hidden); // Drag must not open the panel.
 bubble.onclick({detail:1});assert(!panel.hidden);
 console.log('Free drag, left-edge snap and drag-click suppression passed');
+
+minimize.onclick();host.onpointerenter();const quick=host.shadow.children[3];assert(!quick.hidden);assert(quick.src.endsWith('/quick.html'));bubble.onclick();assert(quick.hidden);console.log('Hover quick card and full panel exclusion passed');
