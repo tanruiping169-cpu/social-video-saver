@@ -43,7 +43,7 @@ globalThis.MediaCore = (() => {
     if(current.startsWith('xhs:')){const note=root?.note?.noteDetailMap?.[wanted]?.note;if(note){roots.push(note);stack.length=0;}}
     while(stack.length&&visited++<40000) {
       const o=stack.pop();if(!o||typeof o!=='object')continue;
-      if(current && [o.id,o.pin_id,o.code,o.shortcode,o.noteId].some(v=>String(v)===wanted)){roots.push(o);continue;}
+      if(current && [o.id,o.pin_id,o.entityId,o.code,o.shortcode,o.noteId].some(v=>String(v)===wanted)){roots.push(o);continue;}
       if(!current && (o.video_sd_url||o.video_hd_url)){roots.push(o);continue;}
       for(const value of Object.values(o))if(value&&typeof value==='object')stack.push(value);
     }
@@ -72,6 +72,11 @@ globalThis.MediaCore = (() => {
       }
     }return result;
   }
+  function pinterestState(text) {
+    const match=text.match(/^\s*window\.__PWS_RELAY_REGISTER_COMPLETED_REQUEST__\s*\(([\s\S]*)\)\s*;?\s*$/);
+    if(!match)return null;
+    try{const args=JSON.parse('['+match[1]+']');return args[1]&&typeof args[1]==='object'?args[1]:null;}catch{return null;}
+  }
   function initialState(text) {
     // Accept a JSON object assignment only; never execute page scripts.
     const match=text.match(/^\s*(?:window\.)?__INITIAL_STATE__\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
@@ -87,5 +92,5 @@ globalThis.MediaCore = (() => {
     if(/^FILE_/.test(code))return '文件无法保存，请检查下载目录和磁盘权限。';
     return code?'操作未完成：'+code:'下载中断，请在任务列表中重试。';
   }
-  return {errorMessage,identity,initialState,site, media, classify, key, filename,target,asset,variants};
+  return {pinterestState,errorMessage,identity,initialState,site, media, classify, key, filename,target,asset,variants};
 })();

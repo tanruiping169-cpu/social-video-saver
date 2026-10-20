@@ -1,10 +1,10 @@
-# 社媒视频保存 · v0.7.0 测试版
+# 社媒视频保存 · v0.7.1 测试版
 
 桌面版 Chrome 本地扩展，无需 API Key 或服务器。
 
 ## 免费下载
 
-[下载 v0.7.0 安装包](https://github.com/tanruiping169-cpu/social-video-saver/releases/download/v0.7.0/social-video-saver-v0.7.0.zip) · [所有发布版本](https://github.com/tanruiping169-cpu/social-video-saver/releases)
+[下载 v0.7.1 安装包](https://github.com/tanruiping169-cpu/social-video-saver/releases/download/v0.7.1/social-video-saver-v0.7.1.zip) · [所有发布版本](https://github.com/tanruiping169-cpu/social-video-saver/releases)
 
 公开源码采用 [MIT 许可证](LICENSE)。安装包无需 GitHub 登录即可下载。本项目尚未上架 Chrome 应用商店，需要手动加载；ZIP 不能直接拖入 Chrome 完成安装。
 
@@ -99,4 +99,9 @@ cd social-video-saver
 for test in tests/*.cjs; do node "$test" || exit; done
 ```
 
-测试使用 Node.js 内置模块，无需安装第三方依赖。历史版本记录中的验证范围只适用于该版本；最新验证请参见 v0.7.0 条目。
+测试使用 Node.js 内置模块，无需安装第三方依赖。历史版本记录中的验证范围只适用于该版本；最新验证请参见 v0.7.1 条目。
+
+## v0.7.1
+修复 Pinterest Relay 脚本中的视频遗漏：安全解析 JSON 参数，支持 entityId 匹配当前 Pin；观察同源视频数据响应以支持动态切换，仅传递媒体字段。新增 Pinterest 回归测试覆盖当前 Pin 隔离、脚本不执行、动态响应及缓存。用户提供的 Pin 797770521539651833 已在 Chrome v0.7.1 实测识别，预览读取实际 720×1280、约 19 秒。
+
+本次全部 7 个本地测试脚本通过。实站下载已启动，但最终保存完成状态尚未核验；不将识别和预览通过视为完整下载验证。
